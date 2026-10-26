@@ -2,7 +2,7 @@
 
 # Automotive content pipeline
 
-Engineering CAD is exact and heavy. It's organised for manufacturing and was never meant for a headset that renders every frame twice. This page covers the geometry processing and tooling that turn it into content for the application described in [Automotive XR on Apple Vision Pro](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio). That means integrating a CAD SDK safely, computational geometry on CAD surfaces, collision proxies and porting the team's Blender add-on across API generations. Plus a deterministic, validating exporter.
+Geometry processing and tooling that turn engineering CAD into real-time 3D content for the application described in [Automotive XR on Apple Vision Pro](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio). This page covers the CAD SDK integration, geometry work on CAD surfaces, collision proxies, the port of the team's Blender add-on across API generations and a deterministic, validating exporter.
 
 The images are example assets made for illustration. They aren't OEM designs and there's no vehicle data in them.
 
@@ -52,7 +52,7 @@ The team's preparation add-on names parts for the Unity importer. It also carrie
 
 Altogether that's 17 operators. The minimum supported version moved from 3.6 to 4.0 and then 5.1.
 
-## Silent data loss, made visible
+## Export paths that lose data
 
 Several export paths lose data without raising an error: FBX drops shape-key animation, muted NLA tracks still export, clips get cut at the frame range and ambient occlusion disappears unless it's wired through the glTF output group. The prototype exporter below turned these into validator findings. Shape-key animation through FBX is still unsolved.
 
@@ -72,7 +72,7 @@ flowchart LR
 
 - 12 modules and a command-line mode, with 112 finding codes.
 - The command line returns 0 for a clean package, 2 for content errors and 3 for a crash. It's ready for batch runs.
-- The audit reads the exported file back instead of trusting the scene. Nodes and animations are checked as they were written.
+- The audit reads the exported file back and checks nodes and animations as they were written.
 - Reported at build time: 7 JSON schemas, 44 tests over 154 test vectors, 14 checks inside Blender and two runs that produced a byte-identical 21-file package. Rigid-bone preparation drifted by at most 1.2 × 10⁻⁷ m.
 
 *Status: prototype.*
