@@ -2,7 +2,7 @@
 
 # Automotive content pipeline
 
-Geometry processing and tooling that turn engineering CAD into real-time 3D content for the application described in [Automotive XR on Apple Vision Pro](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio). This page covers the CAD SDK integration, geometry work on CAD surfaces, collision proxies, the port of the team's Blender add-on across API generations and a deterministic, validating exporter.
+Geometry processing and tooling that turn engineering CAD into real-time 3D content for the application described in [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio). This page covers the CAD SDK integration, geometry work on CAD surfaces, collision proxies, the port of the team's Blender add-on across API generations and a deterministic, validating exporter.
 
 The images are example assets made for illustration. They aren't OEM designs and there's no vehicle data in them.
 
@@ -89,7 +89,7 @@ I own the architecture, the requirements and the acceptance criteria. I build wi
 
 ## Related
 
-- [Automotive XR on Apple Vision Pro](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio): rendering, interaction and release engineering of the application.
+- [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio): rendering, interaction and release engineering of the application.
 
 The environment presets use CC0 HDRIs from Poly Haven that come bundled with Blender. Employer, vehicle and internal tool names are left out.
 
