@@ -2,7 +2,7 @@
 
 # Automotive content pipeline
 
-The workflow and tools that take car interiors from engineering CAD to the headset for the [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio) app. Seat trim gets fitted from reference photos and the measured geometry, in millimetres. A written guide makes the same look repeatable on other cars. A measurement pipeline shows what the mesh reductions save, and the team's Blender add-on prepares the models for export.
+The workflow and tools that take car interiors from engineering CAD to the headset for the [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio) app. Trim gets fitted from reference photos and the measured geometry, in millimetres, starting with the seats. A written guide makes the same look repeatable on other cars. A measurement pipeline shows what the mesh reductions save, and the team's Blender add-on prepares the models for export.
 
 The images are example assets made for illustration. They aren't designs from any car maker and there's no vehicle data in them.
 
@@ -26,16 +26,16 @@ flowchart LR
 
 ![An example part from CAD surfaces to real-time materials: tessellation, reduction, repair, UVs and baking, materials](media/cad-to-realtime.jpg)
 
-## Seat trim fitted from photos, in millimetres
+## Trim fitted from photos, in millimetres
 
-Reference photos show the quilting and stitching, and the seat meshes have the real sizes. I built a workflow that fits one to the other:
+Reference photos show the quilting and stitching, and the meshes have the real sizes. I built a workflow that fits one to the other. The seats came first, so the steps below describe them, and the same steps work on any other part:
 
 1. The photos give the layout of the pattern and the seat meshes give the measured bounds. A parametric generator draws the pattern from both, in millimetres.
 2. The texture layout (UVs) is scaled from the measured bounds, front and rear seats separately, so a stitch has the same physical size on all four seats. Mirrored seats get their tangent handedness corrected, so the baked relief isn't lit from the wrong side.
 3. The depth of the quilting is baked from a height field into normals on the low-poly seat. Colour is composed in linear space with a stitch mask, and metallic and smoothness are packed into one map.
 4. The maps go into Unity with the right colour-space and normal-map settings.
 
-The photos only set the layout, and every size comes from the measured seat. The detail keeps its physical scale while the seat meshes get much lighter (numbers below). Other trim can go through the same steps.
+The photos only set the layout, and every size comes from the measured seat. The detail keeps its physical scale while the seat meshes get much lighter (numbers below).
 
 ## A guide for the next car
 
@@ -73,7 +73,7 @@ Half a metre from the eye, a stitch printed into a texture looks flat. On the da
 
 ## The team's Blender add-on
 
-The add-on gets designers' Blender scenes ready for the Unity importer. A colleague wrote version 1.0. I've co-developed it since version 1.0.1 and ported it from Blender 3.6 to 5.x, where it's in daily use. What it does now:
+The add-on gets designers' Blender scenes ready for the Unity importer. A colleague wrote version 1.0.0. I took it over with his role in October 2025, and since then I've released eight versions, from 1.0.1 to the current 1.1.0, including the port from Blender 3.6 to 5.x. It's in daily use. What it does now:
 
 - A configuration-driven naming grammar for interactive parts (components, clips, buttons, screens) that the importer parses.
 - Animation reading for both legacy and slotted actions.
