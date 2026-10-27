@@ -2,21 +2,55 @@
 
 # Automotive content pipeline
 
-Geometry processing and tooling that turn engineering CAD into real-time 3D content for the application described in [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio). This page covers the CAD SDK integration, geometry work on CAD surfaces, collision proxies, the port of the team's Blender add-on across API generations and a deterministic, validating exporter.
+The workflow and tools that take car interiors from engineering CAD to the headset for the [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio) app. Seat trim gets fitted from reference photos and the measured geometry, in millimetres. A written guide makes the same look repeatable on other cars. A measurement pipeline shows what the mesh reductions save, and the team's Blender add-on prepares the models for export.
 
-The images are example assets made for illustration. They aren't OEM designs and there's no vehicle data in them.
+The images are example assets made for illustration. They aren't designs from any car maker and there's no vehicle data in them.
 
 | Stack | Formats and standards |
 |---|---|
-| Python (bpy, NumPy), C# (Unity Editor), Asset Transformer SDK (Pixyz), Blender 3.6 to 5.x, Unity 6.3, Shader Graph, PolySpatial / RealityKit | FBX, glTF, JSON Schema, SHA-256 manifests, ASTC |
+| Python (bpy, NumPy), C# (Unity Editor), Unity Asset Transformer SDK (Pixyz), Blender 3.6 to 5.x, Unity 6.3, Shader Graph, PolySpatial / RealityKit | FBX, glTF, HDRI, JSON Schema, SHA-256 manifests, ASTC |
+
+## From CAD to the headset
+
+Engineering CAD arrives with up to about 90 million triangles and gets reduced to 1 to 2 million, by hand in Blender or with a CAD toolkit. The team's Blender add-on names the parts and carries the materials across. The exported FBX goes into the Unity scenes, and every build gets checked on the headset. When a build runs out of memory, the model goes back to the reduction step.
+
+```mermaid
+flowchart LR
+    C["Engineering CAD<br/>up to about 90M triangles"] --> R["Reduction to 1 to 2M<br/>Blender or CAD toolkit"]
+    R --> A["Blender add-on<br/>names, material presets"]
+    A --> U["FBX into Unity<br/>scenes, materials, LODs"]
+    U --> X["Xcode build"]
+    X --> H["Check on the headset<br/>memory and look"]
+    H -. "too heavy" .-> R
+```
 
 ![An example part from CAD surfaces to real-time materials: tessellation, reduction, repair, UVs and baking, materials](media/cad-to-realtime.jpg)
 
-## Integrating a CAD SDK without destabilising the project
+## Seat trim fitted from photos, in millimetres
 
-An earlier attempt to add the tessellation toolkit left the editor crashing, most often when the project was reopened. I ran the integration on an isolated branch over a copy-on-write clone of the project. I only merged after a reopen test and a headless compile passed. The dependency diff stayed confined to the toolkit. The crashes were attributed to known macOS issues in the older toolkit and went away after the editor and the toolkit were upgraded together. A separate out-of-memory kill on the headset was traced to unoptimised raw CAD.
+Reference photos show the quilting and stitching, and the seat meshes have the real sizes. I built a workflow that fits one to the other:
 
-*Status: merged and in use.*
+1. The photos give the layout of the pattern and the seat meshes give the measured bounds. A parametric generator draws the pattern from both, in millimetres.
+2. The texture layout (UVs) is scaled from the measured bounds, front and rear seats separately, so a stitch has the same physical size on all four seats. Mirrored seats get their tangent handedness corrected, so the baked relief isn't lit from the wrong side.
+3. The depth of the quilting is baked from a height field into normals on the low-poly seat. Colour is composed in linear space with a stitch mask, and metallic and smoothness are packed into one map.
+4. The maps go into Unity with the right colour-space and normal-map settings.
+
+The photos only set the layout, and every size comes from the measured seat. The detail keeps its physical scale while the seat meshes get much lighter (numbers below). Other trim can go through the same steps.
+
+## A guide for the next car
+
+I wrote the workflow up as a 25-page guide to reproducing the materials and details, with a recipe kit, so the same look can be rebuilt on another car without starting from zero.
+
+## Measuring the result
+
+A measurement pipeline counts renderers, triangles, vertices and submeshes per group straight from the Unity scene, along with textures and texel density. It renders before-and-after views from the same camera with the collider boxes drawn in. Then it writes charts and tables and records the measurement rules it used. For the full review build:
+
+- **Seats:** from about 705k to 210k triangles, about 70% fewer.
+- **Whole car:** from about 1.8 million to 1.0 million triangles.
+- **Materials:** 16 seat material slots moved onto one Shader Graph.
+- **Environments:** panoramas consolidated from 11 to 4, about 140 MB less at load.
+
+After that, six level-of-detail (LOD) passes went into the final build.
 
 ## Quilting cut into CAD surfaces
 
@@ -31,30 +65,34 @@ The quilted design and the CAD seat surfaces never line up. Replacing the CAD wi
 
 *Status: checked in the Editor and in an installed build. Approved in my check on the headset.*
 
-## Stitches as geometry
+## Stitches with real depth
 
-Half a metre from the eye, a stitch printed into a texture looks flat. So each stitch is generated as an 18-vertex thread at the original stitch's position, direction and length. That gives the seams real depth.
+Half a metre from the eye, a stitch printed into a texture looks flat. On the dashboard top, the front door panels, the console and the steering wheel, each stitch is an 18-vertex thread at the original stitch's position, direction and length, which gives the seams real depth. The stitch paths get projected onto the leather with ray casts. On the seats the stitches stay in the baked maps, which keeps the seat meshes light.
 
 ![Flat stitches compared with volumetric stitches](media/stitches-flat-vs-volumetric.jpg)
 
-## Collision proxies that stay out of the input system
+## The team's Blender add-on
 
-Interactive props need collision but CAD meshes make poor colliders. 138,254 triangles of unneeded CAD colliders were replaced by 30 fitted primitives, checked with ray and penetration tests. There are four mesh colliders left. The primitives sit on a layer that PolySpatial doesn't sync, so they never become look-and-pinch targets.
-
-## A Blender add-on across three API generations
-
-The team's preparation add-on names parts for the Unity importer. It also carries materials across and handles the export. I ported it from Blender 3.6 to 5.x, where it's in daily use. The port involved:
+The add-on gets designers' Blender scenes ready for the Unity importer. A colleague wrote version 1.0. I've co-developed it since version 1.0.1 and ported it from Blender 3.6 to 5.x, where it's in daily use. What it does now:
 
 - A configuration-driven naming grammar for interactive parts (components, clips, buttons, screens) that the importer parses.
 - Animation reading for both legacy and slotted actions.
 - Validation before export, with blocking errors and warnings. The export itself runs in a background process.
 - Material values from Substance and the Principled BSDF get written to per-material preset JSON. A Unity-side assigner then applies them.
 
-Altogether that's 17 operators. The minimum supported version moved from 3.6 to 4.0 and then 5.1.
+Altogether that's 17 operators (commands in Blender). The minimum supported version moved from 3.6 to 4.0 and then 5.1.
 
-## Export paths that lose data
+## CAD cleanup with a toolkit
 
-Several export paths lose data without raising an error: FBX drops shape-key animation, muted NLA tracks still export, clips get cut at the frame range and ambient occlusion disappears unless it's wired through the glTF output group. The prototype exporter below turned these into validator findings. Shape-key animation through FBX is still unsolved.
+Some parts go through a CAD toolkit, Unity Asset Transformer (Pixyz), for repair, normals, decimation and UVs in batches. An earlier test had crashed the Editor when the project was reopened. So I added the toolkit in July 2026, after the planned engine upgrade, on an isolated branch, and only merged it after a reopen test and a headless compile passed. With the newer engine and toolkit versions the crash was gone.
+
+## Collision proxies that stay out of the input system
+
+Interactive props need collision, but CAD meshes make poor colliders. Unneeded CAD colliders with 138,254 triangles were replaced by 30 fitted primitives and checked with ray and penetration tests. Four mesh colliders are left. The primitives sit on a layer that PolySpatial doesn't sync, so they never become look-and-pinch targets.
+
+## Export paths that fail silently
+
+Several export paths get the data wrong without raising an error: FBX drops shape-key animation, muted NLA tracks still export, clips get cut at the frame range and ambient occlusion disappears unless it's wired through the glTF output group. The prototype exporter below turned these into validator findings. Shape-key animation through FBX is still unsolved.
 
 ## A deterministic, validating exporter
 
@@ -79,17 +117,17 @@ flowchart LR
 
 ## Environment lighting and texture memory
 
-8K environment panoramas get compressed to ASTC 6×6 and swapped in place. Image-based lighting hangs off the parent of every vehicle so whichever vehicle is loaded gets lit by the selected environment. The scene's panoramas were consolidated from 11 to 4. That's about 140 MB less at load.
+8K environment panoramas get compressed to ASTC 6×6 and swapped in place. Image-based lighting hangs off the parent of every vehicle, so whichever vehicle is loaded gets lit by the selected environment.
 
 ![One material under four environment presets](media/venue-presets.jpg)
 
 ## How I work
 
-I own the architecture, the requirements and the acceptance criteria. I build with AI coding tools and I review and integrate every change myself. I also tune the scenes and judge the result on the headset.
+I own the architecture and set the requirements and acceptance criteria. I build with AI coding tools and agents, and I review and integrate every change myself. I ran the toolkit and LOD passes and tuned the scenes, and I judged every result on the headset.
 
 ## Related
 
-- [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio): rendering, interaction and release engineering of the application.
+- [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio): the app these interiors are made for, with its rendering, interaction, physics and release engineering.
 
 The environment presets use CC0 HDRIs from Poly Haven that come bundled with Blender. Employer, vehicle and internal tool names are left out.
 
