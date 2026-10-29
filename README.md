@@ -2,7 +2,7 @@
 
 # Automotive content pipeline
 
-The workflow and tools that take car interiors from engineering CAD to the headset for the [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio) app. Trim gets fitted from reference photos and the measured geometry, in millimetres, starting with the seats. A written guide makes the same look repeatable on other cars. A measurement pipeline shows what the mesh reductions save, and the team's Blender add-on prepares the models for export.
+The workflow and tools that take car interiors from engineering CAD to the headset for the [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio) app. The team's Blender add-on, which I took over and have released eight versions of, gets every car ready for the app. Trim gets fitted from reference photos and the measured geometry, in millimetres, with the UV layout done by an AI agent I set up, starting with the seats. A written guide makes the same look repeatable on other cars, and a measurement pipeline shows what the mesh reductions save.
 
 The images are example assets made for illustration. They aren't designs from any car maker and there's no vehicle data in them.
 
@@ -28,7 +28,7 @@ flowchart LR
 
 ## Trim fitted from photos, in millimetres
 
-Reference photos show the quilting and stitching, and the meshes have the real sizes. I built a workflow that fits one to the other. The seats came first, so the steps below describe them, and the same steps work on any other part:
+Reference photos show the quilting and stitching, and the meshes have the real sizes. I built a workflow that fits one to the other, and an AI agent I set up lays out the UVs from the reference photo along these steps. The seats came first, so the steps below describe them, and the same steps work on any other part:
 
 1. The photos give the layout of the pattern and the seat meshes give the measured bounds. A parametric generator draws the pattern from both, in millimetres.
 2. The texture layout (UVs) is scaled from the measured bounds, front and rear seats separately, so a stitch has the same physical size on all four seats. Mirrored seats get their tangent handedness corrected, so the baked relief isn't lit from the wrong side.
@@ -75,6 +75,7 @@ Half a metre from the eye, a stitch printed into a texture looks flat. On the da
 
 The add-on gets designers' Blender scenes ready for the Unity importer. A colleague wrote version 1.0.0. I took it over with his role in October 2025, and since then I've released eight versions, from 1.0.1 to the current 1.1.0, including the port from Blender 3.6 to 5.x. It's in daily use. What it does now:
 
+- The everyday Blender steps in a few clicks: hierarchy and naming, quick decimation, normals and UV unwrapping. They are simple on their own, but together they let the designer who delivers a car hand over a build that works in the visionOS app straight away.
 - A configuration-driven naming grammar for interactive parts (components, clips, buttons, screens) that the importer parses.
 - Animation reading for both legacy and slotted actions.
 - Validation before export, with blocking errors and warnings. The export itself runs in a background process.
