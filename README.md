@@ -4,11 +4,17 @@
 
 The workflow and tools that take car interiors from engineering CAD to the headset for the [Automotive XR](https://github.com/jacobemanuel/automotive-spatial-visualization-portfolio) app. The team's Blender add-on, which I took over and have released eight versions of, gets every car ready for the app. Trim gets fitted from reference photos and the measured geometry, in millimetres, with the UV layout done by an AI agent I set up, starting with the seats. A written guide makes the same look repeatable on other cars, and a measurement pipeline shows what the mesh reductions save.
 
-The images are example assets made for illustration. They aren't designs from any car maker and there's no vehicle data in them.
+[See this project on majewski.studio](https://majewski.studio/#p4)
+
+The images are example assets made for illustration. They aren't designs from any car maker and there's no vehicle data in them. The tools and the vehicle models are in-house.
 
 | Stack | Formats and standards |
 |---|---|
 | Python (bpy, NumPy), C# (Unity Editor), Unity Asset Transformer SDK (Pixyz), Blender 3.6 to 5.x, Unity 6.3, Shader Graph, PolySpatial / RealityKit | FBX, glTF, HDRI, JSON Schema, SHA-256 manifests, ASTC |
+
+[![A generated quilted leather seat panel with the same leather on both sides. A line slides across it: on the left the original mesh with 140,800 triangles, on the right the same panel with 70% fewer, 42,240](media/quilted-seat-panel.gif)](https://majewski.studio/assets/work/pipeline-quilting.mp4)
+
+*A generated seat panel with the same look and 70% fewer triangles.*
 
 ## From CAD to the headset
 
@@ -124,7 +130,7 @@ flowchart LR
 
 ## How I work
 
-I own the architecture and set the requirements and acceptance criteria. I build with AI coding tools and agents, and I review and integrate every change myself. I ran the toolkit and LOD passes and tuned the scenes, and I judged every result on the headset.
+My team lead owns the product and its requirements. I'm responsible for the architecture. I build with AI coding tools and agents, and I review and integrate every change myself. I ran the toolkit and LOD passes and tuned the scenes, and I judged every result on the headset.
 
 ## Related
 
